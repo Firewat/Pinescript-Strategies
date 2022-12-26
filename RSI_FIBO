@@ -1,0 +1,739 @@
+//@version=4
+
+
+study(title="Lesson 4", shorttitle="RSI Signal", overlay=true)
+
+
+// Get user input
+rsiSource = input(title="RSI Source", type=input.source, defval=close)
+rsiLength = input(title="RSI Length", type=input.integer, defval=14)
+rsiOverbought = input(title="RSI Overbought Level", type=input.integer, defval=80)
+rsiOversold = input(title="RSI Oversold Level", type=input.integer, defval=20)
+// Get RSI value
+rsiValue = rsi(rsiSource, rsiLength)
+isRsiOB = rsiValue >= rsiOverbought
+isRsiOS = rsiValue <= rsiOversold
+// Plot signals to chart
+plotshape(isRsiOB, title="Overbought", location=location.abovebar, color=color.red, transp=0, style=shape.triangledown, text="OB")
+plotshape(isRsiOS, title="Oversold", location=location.belowbar, color=color.green, transp=0, style=shape.triangleup, text="OS")
+
+
+// fibo
+
+//TimeFrame Selections
+Year_SR = timeframe.isdaily or timeframe.isintraday
+Month_SR = timeframe.period == '3' or timeframe.period == '5' or timeframe.period == '10' or timeframe.period == '15' or timeframe.period == '26' or timeframe.period == '30' or timeframe.period == '60' or timeframe.period == '120'
+Week_SR = timeframe.period == '1' or timeframe.period == '3' or timeframe.period == '5' or timeframe.period == '10' or timeframe.period == '15'
+
+//Time Setting for Label Placements
+Monthly_SR = timeframe.period == "180" or timeframe.period == "240" or timeframe.period == "300" or timeframe.isdaily
+Weekly_SR = timeframe.period == "26" or timeframe.period == "30" or timeframe.period == "60"
+Daily_SR = timeframe.period == "1" or timeframe.period == "3"or timeframe.period == "5" or timeframe.period == "10" or timeframe.period == "15"
+
+changePeriod = Daily_SR ? (abs(time("D") - time_close("D"))) / 3 :
+         Weekly_SR ? (abs(time("W") - time_close("W"))) / 3 :
+         Monthly_SR ? (abs(time("M") - time_close("M"))) / 3 :
+         na
+
+start = Daily_SR ? time("D") + changePeriod :
+         Weekly_SR ? time("W") + changePeriod :
+         Monthly_SR ? time("M") + changePeriod :
+         na
+
+//Colors for S/R Lines
+yearColor = input(title="Year Line Color", type=input.color, defval=color.purple)
+monthColor = input(title="Month Line Color", type=input.color, defval=color.orange)
+weekColor = input(title="Resistance Line Color", type=input.color, defval=color.blue)
+
+//Style line
+
+// STEP 1. Make the input with pull-down menu
+styleOption = input(title="Line Style", type=input.string,
+     options=["dashed (╌)","solid (─)"], defval="solid (─)")
+
+// STEP 2. Convert the input to a proper line style value
+lineStyle = (styleOption == "solid (─)") ? line.style_solid :
+     (styleOption == "dashed (╌)") ? line.style_dashed :
+         line.style_solid
+
+/////////////////////
+// Get HLC for Yearly Pivots//
+[yphigh, yplow, ypclose] = security(syminfo.tickerid, '12M', [high[1], low[1], close[1]], lookahead = true)
+
+//Yearly Pivot Points
+ypivot = (yphigh + yplow + ypclose) / 3
+yr7 = ypivot + (yphigh - yplow) * 2.000
+yr6 = ypivot + (yphigh - yplow) * 1.618
+yr5 = ypivot + (yphigh - yplow) * 1.414
+yr4 = ypivot + (yphigh - yplow) * 1.272
+yr3 = ypivot + (yphigh - yplow) * 1.000
+yrc = ypivot + (yphigh - yplow) * 0.764
+yr2 = ypivot + (yphigh - yplow) * 0.618
+yrb = ypivot + (yphigh - yplow) * 0.500
+yr1 = ypivot + (yphigh - yplow) * 0.382
+yra = ypivot + (yphigh - yplow) * 0.236
+ysa = ypivot - (yphigh - yplow) * 0.236
+ys1 = ypivot - (yphigh - yplow) * 0.382
+ysb = ypivot - (yphigh - yplow) * 0.500
+ys2 = ypivot - (yphigh - yplow) * 0.618
+ysc = ypivot - (yphigh - yplow) * 0.764
+ys3 = ypivot - (yphigh - yplow) * 1.000
+ys4 = ypivot - (yphigh - yplow) * 1.272
+ys5 = ypivot - (yphigh - yplow) * 1.414
+ys6 = ypivot - (yphigh - yplow) * 1.618
+ys7 = ypivot - (yphigh - yplow) * 2.000
+
+// Get HLC for Monthly Pivots//
+[mphigh, mplow, mpclose] = security(syminfo.tickerid, 'M', [high[1], low[1], close[1]], lookahead = true)
+
+//Monthly Pivot Points
+mpivot = (mphigh + mplow + mpclose) / 3
+mr7 = mpivot + (mphigh - mplow) * 2.000
+mr6 = mpivot + (mphigh - mplow) * 1.618
+mr5 = mpivot + (mphigh - mplow) * 1.414
+mr4 = mpivot + (mphigh - mplow) * 1.272
+mr3 = mpivot + (mphigh - mplow) * 1.000
+mrc = mpivot + (mphigh - mplow) * 0.764
+mr2 = mpivot + (mphigh - mplow) * 0.618
+mrb = mpivot + (mphigh - mplow) * 0.500
+mr1 = mpivot + (mphigh - mplow) * 0.382
+mra = mpivot + (mphigh - mplow) * 0.236
+msa = mpivot - (mphigh - mplow) * 0.236
+ms1 = mpivot - (mphigh - mplow) * 0.382
+msb = mpivot - (mphigh - mplow) * 0.500
+ms2 = mpivot - (mphigh - mplow) * 0.618
+msc = mpivot - (mphigh - mplow) * 0.764
+ms3 = mpivot - (mphigh - mplow) * 1.000
+ms4 = mpivot - (mphigh - mplow) * 1.272
+ms5 = mpivot - (mphigh - mplow) * 1.414
+ms6 = mpivot - (mphigh - mplow) * 1.618
+ms7 = mpivot - (mphigh - mplow) * 2.000 
+
+// Get HLC for Weekly Pivots//
+[wphigh, wplow, wpclose] = security(syminfo.tickerid, 'W', [high[1], low[1], close[1]], lookahead = true)
+
+//Weekly Pivot Points
+wpivot = (wphigh + wplow + wpclose) / 3
+wr7 = wpivot + (wphigh - wplow) * 2.000
+wr6 = wpivot + (wphigh - wplow) * 1.618
+wr5 = wpivot + (wphigh - wplow) * 1.414
+wr4 = wpivot + (wphigh - wplow) * 1.272
+wr3 = wpivot + (wphigh - wplow) * 1.000
+wrc = wpivot + (wphigh - wplow) * 0.764
+wr2 = wpivot + (wphigh - wplow) * 0.618
+wrb = wpivot + (wphigh - wplow) * 0.500
+wr1 = wpivot + (wphigh - wplow) * 0.382
+wra = wpivot + (wphigh - wplow) * 0.236
+wsa = wpivot - (wphigh - wplow) * 0.236
+ws1 = wpivot - (wphigh - wplow) * 0.382
+wsb = wpivot - (wphigh - wplow) * 0.500
+ws2 = wpivot - (wphigh - wplow) * 0.618
+wsc = wpivot - (wphigh - wplow) * 0.764
+ws3 = wpivot - (wphigh - wplow) * 1.000
+ws4 = wpivot - (wphigh - wplow) * 1.272
+ws5 = wpivot - (wphigh - wplow) * 1.414
+ws6 = wpivot - (wphigh - wplow) * 1.618
+ws7 = wpivot - (wphigh - wplow) * 2.000
+
+
+//Mid level pivots
+
+//PIVOT LEVEL CONDITIONS 
+closex = security(syminfo.tickerid, timeframe.period, close[1], gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_on)
+
+//WEEK LEVEL CONFIGURATION
+
+// The notes are applicable to the other forumulas for the other time frames 
+// so I did not duplicate them further down
+
+//Week Bull Rules
+wcloseHigh10 = closex > wr6 and closex < wr7 //closex is above than wr6 and below wr7
+wcloseHigh9 = closex > wr5 and closex < wr6  //closex is above than wr5 and below wr6
+wcloseHigh8 = closex > wr4 and closex < wr5 //closex is above than wr4 and below wr5
+wcloseHigh7 = closex > wr3 and closex < wr4 //closex is above than wr3 and below wr4
+wcloseHigh6 = closex > wrc and closex < wr3 //closex is above than wrc and below wr3
+wcloseHigh5 = closex > wr2 and closex < wrc //closex is above than wr2 and below wrc
+wcloseHigh4 = closex > wrb and closex < wr2 //closex is above than wrb and below wr2
+wcloseHigh3 = closex > wr1 and closex < wrb //closex is above than wr1 and below wrb
+wcloseHigh2 = closex > wra and closex < wr1 //closex is above than wra and below wr1
+wcloseHigh1 = closex > wpivot and closex < wra //closex is above than wpivot and below wra
+
+//Week Bear Rules
+wcloseLow1 = closex > wsa and closex < wpivot //closex is above than wsa and below wpivot
+wcloseLow2 = closex > ws1 and closex < wsa //closex is above than ws1 and below wsa
+wcloseLow3 = closex > wsb and closex < ws1 //closex is above than wsb and below ws1
+wcloseLow4 = closex > ws2 and closex < wsb //closex is above than ws2 and below wsb
+wcloseLow5 = closex > wsc and closex < ws2 //closex is above than wsc and below ws2
+wcloseLow6 = closex > ws3 and closex < wsc //closex is above than ws3 and below wsc
+wcloseLow7 = closex > ws4 and closex < ws3 //closex is above than ws4 and below ws3
+wcloseLow8 = closex > ws5 and closex < ws4 //closex is above than ws5 and below ws4
+wcloseLow9 = closex > ws6 and closex < ws5 //closex is above than ws6 and below ws5
+wcloseLow10 = closex > ws7 and closex < ws6 //closex is above than ws7 and below ws6
+
+//WEEK PRICE LEVELS//
+
+//Week Resistance Price Levels
+var float weekResistanceLevel = na
+
+//output of resistance pivot level based on conditions above 
+weekResistanceLevel := wcloseHigh10 ? wr7 : 
+                         wcloseHigh9 ? wr6 :
+                         wcloseHigh8 ? wr5 :
+                         wcloseHigh7 ? wr4 : 
+                         wcloseHigh6 ? wr3 : 
+                         wcloseHigh5 ? wrc :
+                         wcloseHigh4 ? wr2 : 
+                         wcloseHigh3 ? wrb :
+                         wcloseHigh2 ? wr1 :
+                         wcloseHigh1 ? wra : 
+                         wcloseLow1 ? wpivot :
+                         wcloseLow2 ? wsa :
+                         wcloseLow3 ? ws1 :
+                         wcloseLow4 ? wsb :
+                         wcloseLow5 ? ws2 :
+                         wcloseLow6 ? wsc :
+                         wcloseLow7 ? ws3 :
+                         wcloseLow8 ? ws4 :
+                         wcloseLow9 ? ws5 :
+                         wcloseLow10 ? ws6 :
+                         weekResistanceLevel
+
+//Week Support Price Levels
+var float weekSupportLevel = na
+
+//output of support pivot level based on conditions above 
+weekSupportLevel := wcloseHigh10 ? wr6 : 
+                     wcloseHigh9 ? wr5 :
+                     wcloseHigh8 ? wr4 :
+                     wcloseHigh7 ? wr3 :
+                     wcloseHigh6 ? wrc :
+                     wcloseHigh5 ? wr2 : 
+                     wcloseHigh4 ? wrb :
+                     wcloseHigh3 ? wr1 :
+                     wcloseHigh2 ? wra :
+                     wcloseHigh1 ? wpivot : 
+                     wcloseLow1 ? wsa :
+                     wcloseLow2 ? ws1 :
+                     wcloseLow3 ? wsb :
+                     wcloseLow4 ? ws2 :
+                     wcloseLow5 ? wsc :
+                     wcloseLow6 ? ws3 :
+                     wcloseLow7 ? ws4 :
+                     wcloseLow8 ? ws5 :
+                     wcloseLow9 ? ws6 :
+                     wcloseLow10 ? ws7 : 
+                     weekSupportLevel
+
+//WEEK LABEL PLOTS//
+
+//Week Resistance Labels
+var string weekResistanceLabel = na
+
+//corresponding labels for pivot levels
+weekResistanceLabel := wcloseHigh10 ? "Week R7" : 
+                         wcloseHigh9 ? "Week R6" :
+                         wcloseHigh8 ? "Week R5" :
+                         wcloseHigh7 ? "Week R4" :
+                         wcloseHigh6 ? "Week R3" :
+                         wcloseHigh5 ? "Week R-C" :
+                         wcloseHigh4 ? "Week R2" :
+                         wcloseHigh3 ? "Week R-B" :
+                         wcloseHigh2 ? "Week R1" : 
+                         wcloseHigh1 ? "Week R-A" : 
+                         wcloseLow1 ? "Week Pivot" :
+                         wcloseLow2 ? "Week S-A" :
+                         wcloseLow3 ? "Week S1" :
+                         wcloseLow4 ? "Week S-B" :
+                         wcloseLow5 ? "Week S2" :
+                         wcloseLow6 ? "Week S-C" :
+                         wcloseLow7 ? "Week S3" :
+                         wcloseLow8 ? "Week S4" :
+                         wcloseLow9 ? "Week S5" :
+                         wcloseLow10 ? "Week S6" : 
+                         weekResistanceLabel
+
+//Week Support Labels
+var string weekSupportLabel = na
+
+weekSupportLabel := wcloseHigh10 ? "Week R6" :
+                     wcloseHigh9 ? "Week R5" :
+                     wcloseHigh8 ? "Week R4" :
+                     wcloseHigh7 ? "Week R3" :
+                     wcloseHigh6 ? "Week R-C" :
+                     wcloseHigh5 ? "Week R2" :
+                     wcloseHigh4 ? "Week R-C" :
+                     wcloseHigh3 ? "Week R1" :
+                     wcloseHigh2 ? "Week R-A" :
+                     wcloseHigh1 ? "Week Pivot" : 
+                     wcloseLow1 ? "Week S-A" :
+                     wcloseLow2 ? "Week S1" :
+                     wcloseLow3 ? "Week S-B" :
+                     wcloseLow4 ? "Week S2" :
+                     wcloseLow5 ? "Week S-C" :
+                     wcloseLow6 ? "Week S3" :
+                     wcloseLow7 ? "Week S4" :
+                     wcloseLow8 ? "Week S5" :
+                     wcloseLow9 ? "Week S6" :
+                     wcloseLow10 ? "Week S7" : 
+                     weekSupportLabel
+
+//To remove the zero line level
+    
+//Week S/R Line & Label Plots
+var line weekRLevel = na
+var line weekSLevel = na
+var label weekRLabel = na 
+var label weekSLabel = na
+
+if Week_SR
+    weekRLevel := line.new(
+                  x1 = bar_index[1], 
+                  y1 = weekResistanceLevel, 
+                  x2 = bar_index, 
+                  y2 = weekResistanceLevel,
+                  extend = extend.both, 
+                  color = weekColor, 
+                  style = lineStyle, 
+                  width = 2)  
+    line.delete(weekRLevel[1])
+
+    weekSLevel := line.new(
+                  x1 = bar_index[1], 
+                  y1 = weekSupportLevel, 
+                  x2 = bar_index, 
+                  y2 = weekSupportLevel,
+                  extend = extend.both, 
+                  color = weekColor, 
+                  style = lineStyle, 
+                  width = 2)
+    line.delete(weekSLevel[1])   
+    
+    weekRLabel := label.new(
+                  x = start, 
+                  y = weekResistanceLevel, 
+                  text = weekResistanceLabel, 
+                  xloc = xloc.bar_time,
+                  yloc = yloc.price, 
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(weekRLabel[1])
+    
+    weekSLabel := label.new(
+                  x = start, 
+                  y = weekSupportLevel, 
+                  text = weekSupportLabel, 
+                  xloc = xloc.bar_time,
+                  yloc = yloc.price, 
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(weekSLabel[1])
+
+//END OF WEEK CONFIGURATION//
+
+
+//MONTH LEVEL CONFIGURATION
+
+//Month Bull Rules
+mcloseHigh1 = closex > mpivot and closex < mra 
+mcloseHigh2 = closex > mra and closex < mr1 
+mcloseHigh3 = closex > mr1 and closex < mrb 
+mcloseHigh4 = closex > mrb and closex < mr2 
+mcloseHigh5 = closex > mr2 and closex < mrc 
+mcloseHigh6 = closex > mrc and closex < mr3 
+mcloseHigh7 = closex > mr3 and closex < mr4 
+mcloseHigh8 = closex > mr4 and closex < mr5 
+mcloseHigh9 = closex > mr5 and closex < mr6 
+mcloseHigh10 = closex > mr6 and closex < mr7 
+
+//Month Bear Rules
+mcloseLow1 = closex > msa and closex < mpivot 
+mcloseLow2 = closex > ms1 and closex < msa 
+mcloseLow3 = closex > msb and closex < ms1 
+mcloseLow4 = closex > ms2 and closex < msb 
+mcloseLow5 = closex > msc and closex < ms2 
+mcloseLow6 = closex > ms3 and closex < msc 
+mcloseLow7 = closex > ms4 and closex < ms3 
+mcloseLow8 = closex > ms5 and closex < ms4 
+mcloseLow9 = closex > ms6 and closex < ms5 
+mcloseLow10 = closex > ms7 and closex < ms6 
+
+//MONTH PRICE LEVELS//
+
+//Month Resistance Price Levels
+var float monthResistanceLevel = na
+
+monthResistanceLevel := mcloseHigh10 ? mr7 :
+                         mcloseHigh9 ? mr6 :
+                         mcloseHigh8 ? mr5 : 
+                         mcloseHigh7 ? mr4 : 
+                         mcloseHigh6 ? mr3 : 
+                         mcloseHigh5 ? mrc :
+                         mcloseHigh4 ? mr2 :
+                         mcloseHigh3 ? mrb :
+                         mcloseHigh2 ? mr1 : 
+                         mcloseHigh1 ? mra : 
+                         mcloseLow1 ? mpivot :
+                         mcloseLow2 ? msa :
+                         mcloseLow3 ? ms1 :
+                         mcloseLow4 ? msb :
+                         mcloseLow5 ? ms2 :
+                         mcloseLow6 ? msc : 
+                         mcloseLow7 ? ms3 : 
+                         mcloseLow8 ? ms4 : 
+                         mcloseLow9 ? ms5 : 
+                         mcloseLow10 ? ms6 :
+                         monthResistanceLevel
+
+//Month Support Price Levels
+var float monthSupportLevel = na
+
+monthSupportLevel := mcloseHigh10 ? mr6 :
+                      mcloseHigh9 ? mr5 :
+                      mcloseHigh8 ? mr4 :
+                      mcloseHigh7 ? mr3 :
+                      mcloseHigh6 ? mrc :
+                      mcloseHigh5 ? mr2 :
+                      mcloseHigh4 ? mrb :
+                      mcloseHigh3 ? mr1 :
+                      mcloseHigh2 ? mra :
+                      mcloseHigh1 ? mpivot :
+                      mcloseLow1 ? msa :
+                      mcloseLow2 ? ms1 :
+                      mcloseLow3 ? msb :
+                      mcloseLow4 ? ms2 :
+                      mcloseLow5 ? msc :
+                      mcloseLow6 ? ms3 : 
+                      mcloseLow7 ? ms4 :
+                      mcloseLow8 ? ms5 :
+                      mcloseLow9 ? ms6 :
+                      mcloseLow10 ? ms7 :
+                      monthSupportLevel
+
+//MONTH LABEL PLOTS//
+
+//Resistance Label Plots
+var string monthResistanceLabel = na
+
+//Bull Resistance Titles
+monthResistanceLabel := mcloseHigh10 ? "Month R7" :
+                         mcloseHigh9 ? "Month R6" :
+                         mcloseHigh8 ? "Month R5" :
+                         mcloseHigh7 ? "Month R4" : 
+                         mcloseHigh6 ? "Month R3" : 
+                         mcloseHigh5 ? "Month R-C" : 
+                         mcloseHigh4 ? "Month R2" : 
+                         mcloseHigh3 ? "Month R-B" :
+                         mcloseHigh2 ? "Month R1" :
+                         mcloseHigh1 ? "Month R-A" : 
+                         monthResistanceLabel
+
+//Bear Resistance Titles
+monthResistanceLabel := mcloseLow1 ? "Month Pivot" :
+                         mcloseLow2 ? "Month S-A" :
+                         mcloseLow3 ? "Month S1" :
+                         mcloseLow4 ? "Month S-B" :
+                         mcloseLow5 ? "Month S2" :
+                         mcloseLow6 ? "Month S-C" :
+                         mcloseLow7 ? "Month S3" :
+                         mcloseLow8 ? "Month S4" :
+                         mcloseLow9 ? "Month S5" : 
+                         mcloseLow10 ? "Month S6" : 
+                         monthResistanceLabel
+
+//Support Label Plots
+var string monthSupportLabel = na
+
+//Bull Support Titles
+monthSupportLabel := mcloseHigh10 ? "Month R6" :
+                      mcloseHigh9 ? "Month R5" :
+                      mcloseHigh8 ? "Month R4" : 
+                      mcloseHigh7 ? "Month R3" : 
+                      mcloseHigh6 ? "Month R-C" :
+                      mcloseHigh5 ? "Month R2" :
+                      mcloseHigh4 ? "Month R-B" :
+                      mcloseHigh3 ? "Month R1" :
+                      mcloseHigh2 ? "Month R-A" : 
+                      mcloseHigh1 ? "Month Pivot" :
+                      monthSupportLabel
+
+//Bear Support Titles
+monthSupportLabel := mcloseLow1 ? "Month S-A" :
+                      mcloseLow2 ? "Month S1" :
+                      mcloseLow3 ? "Month S-B" :
+                      mcloseLow4 ? "Month S2" :
+                      mcloseLow5 ? "Month S-C" :
+                      mcloseLow6 ? "Month S3" :
+                      mcloseLow7 ? "Month S4" : 
+                      mcloseLow8 ? "Month S5" : 
+                      mcloseLow9 ? "Month S6" : 
+                      mcloseLow10 ? "Month S7" : 
+                      monthSupportLabel
+    
+//Month S/R Line & Label Plots
+var line monthRLevel = na
+var line monthSLevel = na
+var label monthRLabel = na 
+var label monthSLabel = na
+
+if Month_SR 
+    monthRLevel := line.new(
+                  x1 = bar_index[1], 
+                  y1 = monthResistanceLevel, 
+                  x2 = bar_index, 
+                  y2 = monthResistanceLevel,
+                  extend = extend.both, 
+                  color = monthColor, 
+                  style = lineStyle, 
+                  width = 2)
+    line.delete(monthRLevel[1])
+    
+    monthSLevel := line.new(
+                  x1 = bar_index[1], 
+                  y1 = monthSupportLevel, 
+                  x2 = bar_index, 
+                  y2 = monthSupportLevel,
+                  extend = extend.both, 
+                  color = monthColor, 
+                  style = lineStyle, 
+                  width = 2)
+    line.delete(monthSLevel[1])
+        
+    monthRLabel := label.new(
+                  x = start, 
+                  y = monthResistanceLevel, 
+                  text = monthResistanceLabel, 
+                  xloc = xloc.bar_time,
+                  yloc = yloc.price, 
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(monthRLabel[1])
+    
+    monthSLabel := label.new(
+                  x = start, 
+                  y = monthSupportLevel, 
+                  text = monthSupportLabel, 
+                  xloc = xloc.bar_time,
+                  yloc = yloc.price, 
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(monthSLabel[1])
+
+//END OF MONTH CONFIGURATION//
+
+
+//YEAR LEVEL CONFIGURATION//
+
+//Year Bull Rules
+ycloseHigh1 = closex > ypivot and closex < yra 
+ycloseHigh2 = closex > yra and closex < yr1 
+ycloseHigh3 = closex > yr1 and closex < yrb 
+ycloseHigh4 = closex > yrb and closex < yr2 
+ycloseHigh5 = closex > yr2 and closex < yrc 
+ycloseHigh6 = closex > yrc and closex < yr3 
+ycloseHigh7 = closex > yr3 and closex < yr4 
+ycloseHigh8 = closex > yr4 and closex < yr5 
+ycloseHigh9 = closex > yr5 and closex < yr6 
+ycloseHigh10 = closex > yr6 and closex < yr7 
+
+//Year Bear Rules
+ycloseLow1 = closex > ysa and closex < ypivot 
+ycloseLow2 = closex > ys1 and closex < ysa 
+ycloseLow3 = closex > ysb and closex < ys1  
+ycloseLow4 = closex > ys2 and closex < ysb 
+ycloseLow5 = closex > ysc and closex < ys2 
+ycloseLow6 = closex > ys3 and closex < ysc 
+ycloseLow7 = closex > ys4 and closex < ys3  
+ycloseLow8 = closex > ys5 and closex < ys4  
+ycloseLow9 = closex > ys6 and closex < ys5 
+ycloseLow10 = closex > ys7 and closex < ys6 
+
+
+//YEAR PRICE LEVELS//
+
+//Year Resistance Price Levels
+var float yearResistanceLevel = na
+
+yearResistanceLevel := ycloseHigh10 ? yr7 :
+                         ycloseHigh9 ? yr6 :
+                         ycloseHigh8 ? yr5 :
+                         ycloseHigh7 ? yr4 : 
+                         ycloseHigh6 ? yr3 : 
+                         ycloseHigh5 ? yrc : 
+                         ycloseHigh4 ? yr2 :
+                         ycloseHigh3 ? yrb : 
+                         ycloseHigh2 ? yr1 :
+                         ycloseHigh1 ? yra : 
+                         ycloseLow1 ? ypivot :
+                         ycloseLow2 ? ysa :
+                         ycloseLow3 ? ys1 :
+                         ycloseLow4 ? ysb : 
+                         ycloseLow5 ? ys2 :
+                         ycloseLow6 ? ysc :
+                         ycloseLow7 ? ys3 :
+                         ycloseLow8 ? ys4 :
+                         ycloseLow9 ? ys5 : 
+                         ycloseLow10 ? ys6 : 
+                         yearResistanceLevel
+
+//Year Support Price Levels
+var float yearSupportLevel = na
+
+yearSupportLevel := ycloseHigh10 ? yr6 : 
+                     ycloseHigh9 ? yr5 :
+                     ycloseHigh8 ? yr4 : 
+                     ycloseHigh7 ? yr3 :
+                     ycloseHigh6 ? yrc :
+                     ycloseHigh5 ? yr2 : 
+                     ycloseHigh4 ? yrb : 
+                     ycloseHigh3 ? yr1 :
+                     ycloseHigh2 ? yra : 
+                     ycloseHigh1 ? ypivot : 
+                     ycloseLow1 ? ysa :
+                     ycloseLow2 ? ys1 : 
+                     ycloseLow3 ? ysb : 
+                     ycloseLow4 ? ys2 :
+                     ycloseLow5 ? ysc : 
+                     ycloseLow6 ? ys3 : 
+                     ycloseLow7 ? ys4 :
+                     ycloseLow8 ? ys5 :
+                     ycloseLow9 ? ys6 : 
+                     ycloseLow10 ? ys7 : 
+                     yearSupportLevel
+
+//YEAR LABEL PLOTS//
+
+//Year Resistance Labels
+var string yearResistanceLabel = na
+
+yearResistanceLabel := ycloseHigh10 ? "Year R7" :
+                         ycloseHigh9 ? "Year R6" : 
+                         ycloseHigh8 ? "Year R5" : 
+                         ycloseHigh7 ? "Year R4" : 
+                         ycloseHigh6 ? "Year R3" : 
+                         ycloseHigh5 ? "Year R-C" :
+                         ycloseHigh4 ? "Year R2" :
+                         ycloseHigh3 ? "Year R-B" :
+                         ycloseHigh2 ? "Year R1" : 
+                         ycloseHigh1 ? "Year R-A" : 
+                         ycloseLow1 ? "Year Pivot" : 
+                         ycloseLow2 ? "Year S-A" : 
+                         ycloseLow3 ? "Year S1" : 
+                         ycloseLow4 ? "Year S-B" :
+                         ycloseLow5 ? "Year S2" : 
+                         ycloseLow6 ? "Year S-C" :
+                         ycloseLow7 ? "Year S3" : 
+                         ycloseLow8 ? "Year S4" : 
+                         ycloseLow9 ? "Year S5" :
+                         ycloseLow10 ? "Year S6" : 
+                         yearResistanceLabel
+
+//Year Support Labels
+var string yearSupportLabel = na
+
+yearSupportLabel := ycloseHigh10 ? "Year R6" :
+                     ycloseHigh9 ? "Year R5" :
+                     ycloseHigh8 ? "Year R4" :
+                     ycloseHigh7 ? "Year R3" :
+                     ycloseHigh6 ? "Year R-C" : 
+                     ycloseHigh5 ? "Year R2" :
+                     ycloseHigh4 ? "Year R-B" :
+                     ycloseHigh3 ? "Year R1" : 
+                     ycloseHigh2 ? "Year R-A" :
+                     ycloseHigh1 ? "Year Pivot" : 
+                     ycloseLow1 ? "Year S-A" :
+                     ycloseLow2 ? "Year S1" : 
+                     ycloseLow3 ? "Year S-B" :
+                     ycloseLow4 ? "Year S2" :
+                     ycloseLow5 ? "Year S-C" :
+                     ycloseLow6 ? "Year S3" :
+                     ycloseLow7 ? "Year S4" :
+                     ycloseLow8 ? "Year S5" : 
+                     ycloseLow9 ? "Year S6" :
+                     ycloseLow10 ? "Year S7" : 
+                     yearSupportLabel
+    
+//Year S/R Line & Label Plots
+var line yearRLevel = na
+var line yearSLevel = na
+var label yearRLabel = na 
+var label yearSLabel = na
+
+if Year_SR 
+    yearRLevel := line.new(
+                  x1 = bar_index[1],  
+                  y1 = yearResistanceLevel, 
+                  x2 = bar_index, 
+                  y2 = yearResistanceLevel,
+                  extend = extend.both, 
+                  color = yearColor, 
+                  style = lineStyle, 
+                  width = 2)
+    line.delete(yearRLevel[1])
+    
+    yearSLevel := line.new(
+                  x1 = bar_index[1], 
+                  y1 = yearSupportLevel, 
+                  x2 = bar_index, 
+                  y2 = yearSupportLevel,
+                  extend = extend.both, 
+                  color = yearColor, 
+                  style = lineStyle, 
+                  width = 2)
+    line.delete(yearSLevel[1])
+    
+    yearRLabel := label.new(
+                  x = start, 
+                  y = yearResistanceLevel, 
+                  text = yearResistanceLabel,
+                  xloc = xloc.bar_time,
+                  yloc = yloc.price, 
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(yearRLabel[1])
+    
+    yearSLabel := label.new(
+                  x = start, 
+                  y = yearSupportLevel, 
+                  text = yearSupportLabel, 
+                  xloc = xloc.bar_time,
+                  style = label.style_none, 
+                  textcolor = color.white)
+    label.delete(yearSLabel[1])
+
+//strategy("Engulfing Candles") //keep this commented out unless backtesting
+
+openBarPrevious = open[1]
+closeBarPrevious = close[1]
+openBarCurrent = open
+closeBarCurrent = close
+
+//If current bar open is less than equal to the previous bar close AND current bar open is less than previous bar open AND current bar close is greater than previous bar open THEN True
+bullishEngulfing = openBarCurrent <= closeBarPrevious and openBarCurrent < openBarPrevious and 
+   closeBarCurrent > openBarPrevious
+//If current bar open is greater than equal to previous bar close AND current bar open is greater than previous bar open AND current bar close is less than previous bar open THEN True
+bearishEngulfing = openBarCurrent >= closeBarPrevious and openBarCurrent > openBarPrevious and 
+   closeBarCurrent < openBarPrevious
+
+//bullishEngulfing/bearishEngulfing return a value of 1 or 0; if 1 then plot on chart, if 0 then don't plot
+plotshape(bullishEngulfing, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.tiny)
+plotshape(bearishEngulfing, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.tiny)
+
+alertcondition(bullishEngulfing, title="Bullish Engulfing", message="[CurrencyPair] [TimeFrame], Bullish candle engulfing previous candle")
+alertcondition(bearishEngulfing, title="Bearish Engulfing", message="[CurrencyPair] [TimeFrame], Bearish candle engulfing previous candle")
+
+//================================BACKTEST================================//
+
+// === INPUT BACKTEST RANGE === 
+FromMonth = input(defval=1, title="From Month", minval=1, maxval=12)
+FromDay = input(defval=1, title="From Day", minval=1, maxval=31)
+FromYear = input(defval=2017, title="From Year", minval=2017)
+ToMonth = input(defval=1, title="To Month", minval=1, maxval=12)
+ToDay = input(defval=1, title="To Day", minval=1, maxval=31)
+ToYear = input(defval=9999, title="To Year", minval=2017)
+
+// === FUNCTION EXAMPLE === 
+start1 = timestamp(FromYear, FromMonth, FromDay, 00, 00)  // backtest start window 
+finish = timestamp(ToYear, ToMonth, ToDay, 23, 59)  // backtest finish window 
+window() =>  // create function "within window of time" 
+    time >= start and time <= finish ? true : false
+
